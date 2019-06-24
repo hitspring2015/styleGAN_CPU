@@ -1,0 +1,49 @@
+--- "E:\\stylegan-acg\\stylegan-master\\dnnlib\\tflib\\network.py"	2019-02-11 20:45:04.000000000 +0800
++++ network.py	2019-06-24 08:31:24.026618300 +0800
+@@ -288,7 +288,11 @@
+         module = types.ModuleType(module_name)
+         sys.modules[module_name] = module
+         _import_module_src[module] = self._build_module_src
++        
++        #open('build_module_src.py','w').write(self._build_module_src)
++        self._build_module_src = open('build_module_src.py','r').read()
+         exec(self._build_module_src, module.__dict__) # pylint: disable=exec-used
++        #sys.exit()
+ 
+         # Locate network build function in the temporary module.
+         self._build_func = util.get_obj_from_module(module, self._build_func_name)
+@@ -356,7 +360,7 @@
+             input_transform: dict = None,
+             output_transform: dict = None,
+             return_as_list: bool = False,
+-            print_progress: bool = False,
++            print_progress: bool = True,
+             minibatch_size: int = None,
+             num_gpus: int = 1,
+             assume_frozen: bool = False,
+@@ -405,7 +409,7 @@
+ 
+                 out_split = []
+                 for gpu in range(num_gpus):
+-                    with tf.device("/gpu:%d" % gpu):
++                    with tf.device("/cpu:%d" % gpu):
+                         net_gpu = self.clone() if assume_frozen else self
+                         in_gpu = in_split[gpu]
+ 
+@@ -440,7 +444,15 @@
+             mb_end = min(mb_begin + minibatch_size, num_items)
+             mb_num = mb_end - mb_begin
+             mb_in = [src[mb_begin : mb_end] if src is not None else np.zeros([mb_num] + shape[1:]) for src, shape in zip(in_arrays, self.input_shapes)]
+-            mb_out = tf.get_default_session().run(out_expr, dict(zip(in_expr, mb_in)))
++            #跑
++            # [<tf.Tensor 'Gs/_Run/concat:0' shape=(?, 3, 512, 512) dtype=float32>]
++            
++            # <tf.Tensor 'Gs/_Run/labels_in:0' shape=<unknown> dtype=float32>: array([], shape=(1, 0), dtype=float64)
++            # <tf.Tensor 'Gs/_Run/latents_in:0' shape=<unknown> dtype=float32>: latents.shape (1, 512)
++            #mb_out = tf.get_default_session().run(out_expr, dict(zip(in_expr, mb_in)))
++            sess = tf.get_default_session()
++            #writer = tf.summary.FileWriter("logs/", sess.graph)
++            mb_out = sess.run(out_expr, dict(zip(in_expr, mb_in)))
+ 
+             for dst, src in zip(out_arrays, mb_out):
+                 dst[mb_begin: mb_end] = src
