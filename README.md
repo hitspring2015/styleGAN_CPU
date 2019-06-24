@@ -1,4 +1,23 @@
 # run styleGAN on cpu patchs
+修改 dnnlib/tflib/network 网络执行模块，通过加载模型自带的code运行
+
+hack时，取代exec函数，执行网络stylegan\training\networks_stylegan.py
+
+大量修改networks_stylegan源码
+
+# 资源 
+*.patch 为补丁，.py为修改源码，替换即可
+
+png.png，生成器网络架构
+
+network_arch.bat，生成网络层原信息输出
+
+Demo_9407354600621004326.png 生成的动漫美少女
+
+v2-a9977f61a73fdb811298bddffb5ca63c_r.jpg 随便扒的一个styleGAN架构，转自styleGAN论文
+
+# 口区
+坑爹的运算格式。。。谷歌您啊就不能在CPU版本写个自动NCHW转NHWC吗？？
 
 # reference
 https://zhuanlan.zhihu.com/p/31988761
